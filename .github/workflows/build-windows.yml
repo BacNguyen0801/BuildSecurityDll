@@ -1,0 +1,37 @@
+name: Build SecureAccessKeys DLL
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build ${{ matrix.arch }}
+    runs-on: windows-2022
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x64, Win32]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure CMake
+        run: cmake -S . -B build -A ${{ matrix.arch }} -DSECUREACCESSKEYS_BUILD_TESTS=ON
+
+      - name: Build Release DLL
+        run: cmake --build build --config Release --parallel
+
+      - name: Run unit tests
+        run: ctest --test-dir build -C Release --output-on-failure
+
+      - name: Upload DLL artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SecureAccessKeys-${{ matrix.arch }}
+          path: build/Release/SecureAccessKeys.dll
+          if-no-files-found: error
+          retention-days: 30
