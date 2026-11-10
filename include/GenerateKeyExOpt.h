@@ -5,8 +5,8 @@
 //   Copyright: Vector Informatik GmbH - 2003
 //****************************************************************************************
 
-#ifndef KEY_GEN_ALGO_INTERFACE_H
-#define KEY_GEN_ALGO_INTERFACE_H
+#ifndef KEY_GEN_ALGO_INTERFACE_OPT_H
+#define KEY_GEN_ALGO_INTERFACE_OPT_H
 
 #if _MSC_VER > 1000
 #pragma once
@@ -43,4 +43,4 @@ KEYGENALGO_API VKeyGenResultExOpt GenerateKeyExOpt(
    unsigned int& oActualKeyArraySize);
 
 
-#endif // KEY_GEN_ALGO_INTERFACE_H
+#endif // KEY_GEN_ALGO_INTERFACE_OPT_H
