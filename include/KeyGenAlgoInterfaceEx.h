@@ -1,44 +1,50 @@
+//****************************************************************************************
+//   File name: KeyGenAlgo.h
+// Description: Abstract base class defines the interface for the key generation algorithm
+//        Date: 2003-07-17
+//   Copyright: Vector Informatik GmbH - 2003
+//****************************************************************************************
+
+#ifndef KEY_GEN_ALGO_INTERFACE_H
+#define KEY_GEN_ALGO_INTERFACE_H
+
+#if _MSC_VER > 1000
 #pragma once
-
-/*
- * STARTER INTERFACE ONLY.
- *
- * Before using this DLL with CANoe, compare/replace this file with the exact
- * KeyGenAlgoInterfaceEx.h delivered with your installed CANoe 17 sample:
- *
- *   C:\Users\Public\Documents\Vector\CANoe\Sample Configurations 17.x.x\
- *   CAN\Diagnostics\UDSSystem\SecurityAccess\Sources\
- *   KeyGenDll_GenerateKeyEx\
- *
- * Vector's header is authoritative for ABI, enum values, export decoration,
- * calling convention and parameter types. Do not assume this starter header
- * is a substitute for the installed Vector header.
- */
-
-#ifdef _WIN32
-  #ifdef SECUREACCESSKEYS_EXPORTS
-    #define KEYGENALGO_API extern "C" __declspec(dllexport)
-  #else
-    #define KEYGENALGO_API extern "C" __declspec(dllimport)
-  #endif
-#else
-  #define KEYGENALGO_API extern "C"
 #endif
+
+
+#ifdef KEYGENALGO_EXPORTS
+#define KEYGENALGO_API extern "C" __declspec(dllexport)
+#else
+#define KEYGENALGO_API __declspec(dllimport)
+#endif
+
+
 
 enum VKeyGenResultEx
 {
-    KGRE_Ok = 0,
-    KGRE_UnspecifiedError = -1,
-    KGRE_SecurityLevelInvalid = -84,
-    KGRE_BufferToSmall = -86
+  KGRE_Ok = 0,
+  KGRE_BufferToSmall = 1,
+  KGRE_SecurityLevelInvalid = 2,
+  KGRE_VariantInvalid = 3,
+  KGRE_UnspecifiedError = 4
 };
 
+
+// The client has to provide a keyArray buffer and has to transfer this buffer - 
+// including its size - to the GenerateKey method. The method checks, if the size is
+// sufficient. The client can discover the required size by examinig the service used
+// transfer the key to the ECU.
+// Returns false if the key could not be generated:
+//  -> keyArraySize to small
+//  -> generation for specified security level not possible
+//  -> variant unknown
 KEYGENALGO_API VKeyGenResultEx GenerateKeyEx(
-    const unsigned char* iSeedArray,
-    unsigned int iSeedArraySize,
-    const unsigned int iSecurityLevel,
-    const char* iVariant,
-    unsigned char* ioKeyArray,
-    unsigned int iKeyArraySize,
-    unsigned int& oSize
-);
+  const unsigned char*  ipSeedArray,      unsigned int  iSeedArraySize,
+  const unsigned int    iSecurityLevel,   const char*   ipVariant,
+  unsigned char*        iopKeyArray,      unsigned int  iMaxKeyArraySize, 
+  unsigned int&         oActualKeyArraySize);
+
+
+
+#endif // KEY_GEN_ALGO_INTERFACE_H

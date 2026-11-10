@@ -9,11 +9,9 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-option(SECUREACCESSKEYS_BUILD_TESTS "Build the algorithm unit tests" ON)
-
 add_library(SecureAccessKeys SHARED
-    src/GenerateKeyEx.cpp
-    src/SecurityAlgorithm.cpp
+    src/GenerateKeyExImpl.cpp
+    src/GenerateKeyExOpt.cpp
 )
 
 target_include_directories(SecureAccessKeys
@@ -31,14 +29,3 @@ if(MSVC)
     target_compile_options(SecureAccessKeys PRIVATE /W4 /permissive-)
 endif()
 
-if(SECUREACCESSKEYS_BUILD_TESTS)
-    enable_testing()
-    add_executable(SecurityAlgorithmTests
-        tests/SecurityAlgorithmTests.cpp
-        src/SecurityAlgorithm.cpp
-    )
-    target_include_directories(SecurityAlgorithmTests PRIVATE
-        "${CMAKE_CURRENT_SOURCE_DIR}/include"
-    )
-    add_test(NAME SecurityAlgorithmTests COMMAND SecurityAlgorithmTests)
-endif()
