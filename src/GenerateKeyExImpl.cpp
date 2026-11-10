@@ -12,8 +12,6 @@ BOOL APIENTRY DllMain( HANDLE hModule,
     return TRUE;
 }
 
-
-
 KEYGENALGO_API VKeyGenResultEx GenerateKeyEx(
       const unsigned char*  iSeedArray,     /* Array for the seed [in] */
       unsigned int          iSeedArraySize, /* Length of the array for the seed [in] */

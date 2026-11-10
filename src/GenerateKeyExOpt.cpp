@@ -31,10 +31,10 @@ KEYGENALGO_API VKeyGenResultExOpt GenerateKeyExOpt(
   memcpy( iopKeyArray, ipSeedArray, iSeedArraySize);
 
   // As an example each byte in the options array will be added to each byte of the seed array securityLevel times.
-  for( unsigned int l = 0; l < iSecurityLevel; ++l)
+  // for( unsigned int l = 0; l < iSecurityLevel; ++l)
   {
     for( unsigned int i = 0; i < iSeedArraySize; ++i)
-      iopKeyArray[i] += ipOptions[i];
+      iopKeyArray[i] += ipSeedArray[i] + iSecurityLevel;
   }
 
   oActualKeyArraySize = iSeedArraySize;
