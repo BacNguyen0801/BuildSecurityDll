@@ -18,7 +18,11 @@ target_include_directories(SecureAccessKeys
     PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
 )
 
-target_compile_definitions(SecureAccessKeys PRIVATE SECUREACCESSKEYS_EXPORTS)
+target_compile_definitions(SecureAccessKeys PRIVATE
+    SECUREACCESSKEYS_EXPORTS
+    KEYGENALGO_EXPORTS
+    GENERATEKEYEXOPTIMPL_EXPORTS
+)
 set_target_properties(SecureAccessKeys PROPERTIES
     OUTPUT_NAME "SecureAccessKeys"
     WINDOWS_EXPORT_ALL_SYMBOLS OFF
