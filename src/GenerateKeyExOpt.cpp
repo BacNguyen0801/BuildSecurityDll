@@ -175,6 +175,7 @@ KEYGENALGO_API VKeyGenResultExOpt GenerateKeyExOpt(
     (void)ipVariant;
     (void)ipOptions;
     oActualKeyArraySize = 0U;
+    int encryptedLength = 0U;
 
     if (iSecurityLevel == 0U || iSecurityLevel > 10U)
         return KGREO_SecurityLevelInvalid;
@@ -189,7 +190,7 @@ KEYGENALGO_API VKeyGenResultExOpt GenerateKeyExOpt(
         if (iSeedArraySize != 16U || iMaxKeyArraySize < 16U)
             return KGREO_BufferToSmall;
 
-        int encryptedLength = aes_ecb_encrypt(
+        encryptedLength = aes_ecb_encrypt(
             gKeyArray[0], ipSeedArray, 16U, iopKeyArray);
 
         if (encryptedLength != 16)
