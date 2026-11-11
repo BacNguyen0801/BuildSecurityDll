@@ -189,7 +189,7 @@ KEYGENALGO_API VKeyGenResultExOpt GenerateKeyExOpt(
         if (iSeedArraySize != 16U || iMaxKeyArraySize < 16U)
             return KGREO_BufferToSmall;
 
-        const int encryptedLength = aes_ecb_encrypt(
+        int encryptedLength = aes_ecb_encrypt(
             gKeyArray[0], ipSeedArray, 16U, iopKeyArray);
 
         if (encryptedLength != 16)
