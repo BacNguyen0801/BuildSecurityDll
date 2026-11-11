@@ -24,7 +24,7 @@ KEYGENALGO_API VKeyGenResultExOpt GenerateKeyExOpt(
   if( iMaxKeyArraySize < iSeedArraySize || 4 > iSeedArraySize)
     return KGREO_BufferToSmall;
 
-  if( !ipSeedArray || !iopKeyArray || !ipOptions || strlen( ipOptions) < iSeedArraySize)
+  if( !ipSeedArray || !iopKeyArray )
     return KGREO_UnspecifiedError;
 
   // Copy the input bytes to the output bytes
