@@ -1,36 +1,36 @@
-//////////////////////////////////////////////////////////////////////////
-/// Seed & Key DLL with extended interface and options argument
-/// This is an example implementation for CANoe demo configuration "UDSsim"
-//////////////////////////////////////////////////////////////////////////
-
+///////////////////////////////////////////////////////////////////////////////
+// Seed & Key DLL with extended interface and options argument
+// AES-128 ECB implementation: standalone C++, no external crypto library.
+///////////////////////////////////////////////////////////////////////////////
 
 #include <windows.h>
+#include <string.h>
 #include "GenerateKeyExOpt.h"
-
 
 #define MAX_KEY_SLOTS 16U
 #define MAX_KEY_LENGTH 16U
 
+// Example keys. Replace with the project-approved key provisioning method.
 unsigned char gKeyArray[MAX_KEY_SLOTS][MAX_KEY_LENGTH] = {
-  {0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1, 0xF1},
-  {0xF2, 0xF2, 0xF2, 0xF2, 0xF2, 0xF2, 0xF2, 0xF2, 0xF2, 0xF2, 0xF2, 0xF2, 0xF2, 0xF2, 0xF2, 0xF2},
-  {0xF3, 0xF3, 0xF3, 0xF3, 0xF3, 0xF3, 0xF3, 0xF3, 0xF3, 0xF3, 0xF3, 0xF3, 0xF3, 0xF3, 0xF3, 0xF3},
-  {0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4, 0xF4},
-  {0xF5, 0xF5, 0xF5, 0xF5, 0xF5, 0xF5, 0xF5, 0xF5, 0xF5, 0xF5, 0xF5, 0xF5, 0xF5, 0xF5, 0xF5, 0xF5},
-  {0xF6, 0xF6, 0xF6, 0xF6, 0xF6, 0xF6, 0xF6, 0xF6, 0xF6, 0xF6, 0xF6, 0xF6, 0xF6, 0xF6, 0xF6, 0xF6},
-  {0xF7, 0xF7, 0xF7, 0xF7, 0xF7, 0xF7, 0xF7, 0xF7, 0xF7, 0xF7, 0xF7, 0xF7, 0xF7, 0xF7, 0xF7, 0xF7},
-  {0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8, 0xF8},
-  {0xF9, 0xF9, 0xF9, 0xF9, 0xF9, 0xF9, 0xF9, 0xF9, 0xF9, 0xF9, 0xF9, 0xF9, 0xF9, 0xF9, 0xF9, 0xF9},
-  {0xFA, 0xFA, 0xFA, 0xFA, 0xFA, 0xFA, 0xFA, 0xFA, 0xFA, 0xFA, 0xFA, 0xFA, 0xFA, 0xFA, 0xFA, 0xFA},
-  {0xFB, 0xFB, 0xFB, 0xFB, 0xFB, 0xFB, 0xFB, 0xFB, 0xFB, 0xFB, 0xFB, 0xFB, 0xFB, 0xFB, 0xFB, 0xFB},
-  {0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC},
-  {0xFD, 0xFD, 0xFD, 0xFD, 0xFD, 0xFD, 0xFD, 0xFD, 0xFD, 0xFD, 0xFD, 0xFD, 0xFD, 0xFD, 0xFD, 0xFD},
-  {0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE},
-  {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},
-  {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+    {0xF1,0xF1,0xF1,0xF1,0xF1,0xF1,0xF1,0xF1,0xF1,0xF1,0xF1,0xF1,0xF1,0xF1,0xF1,0xF1},
+    {0xF2,0xF2,0xF2,0xF2,0xF2,0xF2,0xF2,0xF2,0xF2,0xF2,0xF2,0xF2,0xF2,0xF2,0xF2,0xF2},
+    {0xF3,0xF3,0xF3,0xF3,0xF3,0xF3,0xF3,0xF3,0xF3,0xF3,0xF3,0xF3,0xF3,0xF3,0xF3,0xF3},
+    {0xF4,0xF4,0xF4,0xF4,0xF4,0xF4,0xF4,0xF4,0xF4,0xF4,0xF4,0xF4,0xF4,0xF4,0xF4,0xF4},
+    {0xF5,0xF5,0xF5,0xF5,0xF5,0xF5,0xF5,0xF5,0xF5,0xF5,0xF5,0xF5,0xF5,0xF5,0xF5,0xF5},
+    {0xF6,0xF6,0xF6,0xF6,0xF6,0xF6,0xF6,0xF6,0xF6,0xF6,0xF6,0xF6,0xF6,0xF6,0xF6,0xF6},
+    {0xF7,0xF7,0xF7,0xF7,0xF7,0xF7,0xF7,0xF7,0xF7,0xF7,0xF7,0xF7,0xF7,0xF7,0xF7,0xF7},
+    {0xF8,0xF8,0xF8,0xF8,0xF8,0xF8,0xF8,0xF8,0xF8,0xF8,0xF8,0xF8,0xF8,0xF8,0xF8,0xF8},
+    {0xF9,0xF9,0xF9,0xF9,0xF9,0xF9,0xF9,0xF9,0xF9,0xF9,0xF9,0xF9,0xF9,0xF9,0xF9,0xF9},
+    {0xFA,0xFA,0xFA,0xFA,0xFA,0xFA,0xFA,0xFA,0xFA,0xFA,0xFA,0xFA,0xFA,0xFA,0xFA,0xFA},
+    {0xFB,0xFB,0xFB,0xFB,0xFB,0xFB,0xFB,0xFB,0xFB,0xFB,0xFB,0xFB,0xFB,0xFB,0xFB,0xFB},
+    {0xFC,0xFC,0xFC,0xFC,0xFC,0xFC,0xFC,0xFC,0xFC,0xFC,0xFC,0xFC,0xFC,0xFC,0xFC,0xFC},
+    {0xFD,0xFD,0xFD,0xFD,0xFD,0xFD,0xFD,0xFD,0xFD,0xFD,0xFD,0xFD,0xFD,0xFD,0xFD,0xFD},
+    {0xFE,0xFE,0xFE,0xFE,0xFE,0xFE,0xFE,0xFE,0xFE,0xFE,0xFE,0xFE,0xFE,0xFE,0xFE,0xFE},
+    {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF},
+    {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}
 };
 
-static const uint8_t sbox[256] = {
+static const unsigned char sbox[256] = {
     0x63,0x7c,0x77,0x7b,0xf2,0x6b,0x6f,0xc5,0x30,0x01,0x67,0x2b,0xfe,0xd7,0xab,0x76,
     0xca,0x82,0xc9,0x7d,0xfa,0x59,0x47,0xf0,0xad,0xd4,0xa2,0xaf,0x9c,0xa4,0x72,0xc0,
     0xb7,0xfd,0x93,0x26,0x36,0x3f,0xf7,0xcc,0x34,0xa5,0xe5,0xf1,0x71,0xd8,0x31,0x15,
@@ -49,132 +49,137 @@ static const uint8_t sbox[256] = {
     0x8c,0xa1,0x89,0x0d,0xbf,0xe6,0x42,0x68,0x41,0x99,0x2d,0x0f,0xb0,0x54,0xbb,0x16
 };
 
-static uint8_t xtime(uint8_t x)
+static unsigned char aes_xtime(unsigned char x)
 {
-    return (uint8_t)((x << 1) ^ ((x & 0x80) ? 0x1B : 0));
+    return (unsigned char)((x << 1) ^ ((x & 0x80U) ? 0x1BU : 0U));
 }
 
-static void aes_encrypt_block(const uint8_t *input,
-                              uint8_t *output,
-                              const uint8_t *rk)
+static void aes_encrypt_block(const unsigned char* input,
+                              unsigned char* output,
+                              const unsigned char* roundKey)
 {
-    uint8_t s[16];
-    memcpy(s, input, 16);
+    unsigned char state[16];
+    memcpy(state, input, 16);
 
-    for (int i = 0; i < 16; i++) s[i] ^= rk[i];
+    for (int i = 0; i < 16; ++i)
+        state[i] ^= roundKey[i];
 
-    for (int round = 1; round <= 10; round++)
+    for (int round = 1; round <= 10; ++round)
     {
-        for (int i = 0; i < 16; i++) s[i] = sbox[s[i]];
+        for (int i = 0; i < 16; ++i)
+            state[i] = sbox[state[i]];
 
-        uint8_t t;
-        t=s[1]; s[1]=s[5]; s[5]=s[9]; s[9]=s[13]; s[13]=t;
-        t=s[2]; s[2]=s[10]; s[10]=t;
-        t=s[6]; s[6]=s[14]; s[14]=t;
-        t=s[3]; s[3]=s[15]; s[15]=s[11]; s[11]=s[7]; s[7]=t;
+        unsigned char t;
+        t = state[1]; state[1] = state[5]; state[5] = state[9]; state[9] = state[13]; state[13] = t;
+        t = state[2]; state[2] = state[10]; state[10] = t;
+        t = state[6]; state[6] = state[14]; state[14] = t;
+        t = state[3]; state[3] = state[15]; state[15] = state[11]; state[11] = state[7]; state[7] = t;
 
         if (round < 10)
         {
-            for (int c = 0; c < 4; c++)
+            for (int c = 0; c < 4; ++c)
             {
-                uint8_t *a = s + c*4;
-                uint8_t x = a[0]^a[1]^a[2]^a[3];
-                uint8_t u = a[0];
-                a[0] ^= x ^ xtime(a[0]^a[1]);
-                a[1] ^= x ^ xtime(a[1]^a[2]);
-                a[2] ^= x ^ xtime(a[2]^a[3]);
-                a[3] ^= x ^ xtime(a[3]^u);
+                unsigned char* a = state + c * 4;
+                unsigned char x = (unsigned char)(a[0] ^ a[1] ^ a[2] ^ a[3]);
+                unsigned char u = a[0];
+                a[0] ^= (unsigned char)(x ^ aes_xtime((unsigned char)(a[0] ^ a[1])));
+                a[1] ^= (unsigned char)(x ^ aes_xtime((unsigned char)(a[1] ^ a[2])));
+                a[2] ^= (unsigned char)(x ^ aes_xtime((unsigned char)(a[2] ^ a[3])));
+                a[3] ^= (unsigned char)(x ^ aes_xtime((unsigned char)(a[3] ^ u)));
             }
         }
 
-        for (int i = 0; i < 16; i++)
-            s[i] ^= rk[round*16+i];
+        for (int i = 0; i < 16; ++i)
+            state[i] ^= roundKey[round * 16 + i];
     }
 
-    memcpy(output, s, 16);
+    memcpy(output, state, 16);
 }
 
-// AES-128 ECB encryption (input length must be multiple of 16)
-int aes_ecb_encrypt(const uint8_t *key,
-                    const uint8_t *input,
-                    uint32_t length,
-                    uint8_t *output)
+// AES-128 ECB. Input length must be a non-zero multiple of 16 bytes.
+// Returns the number of encrypted bytes, or -1 on invalid arguments.
+static int aes_ecb_encrypt(const unsigned char* key,
+                           const unsigned char* input,
+                           unsigned int length,
+                           unsigned char* output)
 {
-    if (!key || !input || !output || length == 0 || length % 16)
+    if (key == NULL || input == NULL || output == NULL ||
+        length == 0U || (length % 16U) != 0U)
         return -1;
 
-    uint8_t rk[176];
-    uint8_t rcon = 1;
-    memcpy(rk, key, 16);
+    unsigned char roundKey[176];
+    unsigned char rcon = 0x01U;
+    memcpy(roundKey, key, 16);
 
     for (int i = 16; i < 176; i += 4)
     {
-        uint8_t t[4];
-        memcpy(t, rk+i-4, 4);
+        unsigned char temp[4];
+        memcpy(temp, roundKey + i - 4, 4);
 
-        if (i % 16 == 0)
+        if ((i % 16) == 0)
         {
-            uint8_t x = t[0];
-            t[0] = sbox[t[1]] ^ rcon;
-            t[1] = sbox[t[2]];
-            t[2] = sbox[t[3]];
-            t[3] = sbox[x];
-            rcon = xtime(rcon);
+            unsigned char first = temp[0];
+            temp[0] = (unsigned char)(sbox[temp[1]] ^ rcon);
+            temp[1] = sbox[temp[2]];
+            temp[2] = sbox[temp[3]];
+            temp[3] = sbox[first];
+            rcon = aes_xtime(rcon);
         }
 
-        for (int j = 0; j < 4; j++)
-            rk[i+j] = rk[i-16+j] ^ t[j];
+        for (int j = 0; j < 4; ++j)
+            roundKey[i + j] = (unsigned char)(roundKey[i - 16 + j] ^ temp[j]);
     }
 
-    for (uint32_t i = 0; i < length; i += 16)
-        aes_encrypt_block(input+i, output+i, rk);
+    // ECB encrypts each 16-byte block independently.
+    for (unsigned int offset = 0; offset < length; offset += 16U)
+        aes_encrypt_block(input + offset, output + offset, roundKey);
 
     return (int)length;
 }
 
 KEYGENALGO_API VKeyGenResultExOpt GenerateKeyExOpt(
-  const unsigned char*  ipSeedArray,            // Array for the seed [in]
-  unsigned int          iSeedArraySize,         // Length of the array for the seed [in]
-  const unsigned int    iSecurityLevel,         // Security level [in]
-  const char*           ipVariant,              // Name of the active variant [in]
-  const char*           ipOptions,              // Optional parameter which might be used for OEM specific information [in]
-  unsigned char*        iopKeyArray,            // Array for the key [in, out]
-  unsigned int          iMaxKeyArraySize,       // Maximum length of the array for the key [in]
-  unsigned int&         oActualKeyArraySize)    // Length of the key [out]
+    const unsigned char* ipSeedArray,
+    unsigned int iSeedArraySize,
+    const unsigned int iSecurityLevel,
+    const char* ipVariant,
+    const char* ipOptions,
+    unsigned char* iopKeyArray,
+    unsigned int iMaxKeyArraySize,
+    unsigned int& oActualKeyArraySize)
 {
-  // Check the input arguments
-  if( iSecurityLevel == 0 || iSecurityLevel > 10)
-    return KGREO_SecurityLevelInvalid;
+    (void)ipVariant;
+    (void)ipOptions;
+    oActualKeyArraySize = 0U;
 
-  if( iMaxKeyArraySize < iSeedArraySize || 4 > iSeedArraySize)
-    return KGREO_BufferToSmall;
+    if (iSecurityLevel == 0U || iSecurityLevel > 10U)
+        return KGREO_SecurityLevelInvalid;
 
-  if( !ipSeedArray || !iopKeyArray )
-    return KGREO_UnspecifiedError;
+    if (ipSeedArray == NULL || iopKeyArray == NULL)
+        return KGREO_UnspecifiedError;
 
-  // Copy the input bytes to the output bytes
-  memcpy( iopKeyArray, ipSeedArray, iSeedArraySize);
-
-  // As an example each byte in the options array will be added to each byte of the seed array securityLevel times.
-  switch(iSecurityLevel)
-  {
-    case 0x01: /* Security access L1 */
+    if (iSecurityLevel == 1U)
     {
-      iSeedArraySize = aes_ecb_encrypt(
-        gKeyArray[0u], ipSeedArray, 16u, iopKeyArray);
-    } break;
-    default:
-    {
-      for( unsigned int i = 0; i < iSeedArraySize; ++i)
-        iopKeyArray[i] = 0x5A;
+        // AES-128 operates on exactly one or more complete 16-byte blocks.
+        if (iSeedArraySize != 16U || iMaxKeyArraySize < 16U)
+            return KGREO_BufferToSmall;
+
+        const int encryptedLength = aes_ecb_encrypt(
+            gKeyArray[0], ipSeedArray, 16U, iopKeyArray);
+
+        if (encryptedLength != 16)
+            return KGREO_UnspecifiedError;
+
+        oActualKeyArraySize = 16U;
+        return KGREO_Ok;
     }
-    break;
-  }
-  {
-    for( unsigned int i = 0; i < iSeedArraySize; ++i)
-      iopKeyArray[i] = ipSeedArray[i] + iSecurityLevel;
-  }
 
-  oActualKeyArraySize = iSeedArraySize;
-  return KGREO_Ok;
+    // Preserve the example behavior for other security levels.
+    if (iSeedArraySize == 0U || iMaxKeyArraySize < iSeedArraySize)
+        return KGREO_BufferToSmall;
+
+    for (unsigned int i = 0; i < iSeedArraySize; ++i)
+        iopKeyArray[i] = 0x5AU;
+
+    oActualKeyArraySize = iSeedArraySize;
+    return KGREO_Ok;
 }
