@@ -137,6 +137,31 @@ static int aes_ecb_encrypt(const unsigned char* key,
     return (int)length;
 }
 
+void GenerateKeyFromSeed(
+    const unsigned char* seed,
+    unsigned char* Key_pu8)
+{
+    // Step 1: Invert each seed byte
+    for (int i = 0; i < 16; i++)
+    {
+        Key_pu8[i] = seed[i] ^ 0xFF;
+    }
+
+    // Step 2: Increment from byte 15 backwards
+    for (int i = 15; i >= 0; i--)
+    {
+        if (Key_pu8[i] == 0xFF)
+        {
+            Key_pu8[i] = 0x00;
+        }
+        else
+        {
+            Key_pu8[i]++;
+            break;
+        }
+    }
+}
+
 KEYGENALGO_API VKeyGenResultExOpt GenerateKeyExOpt(
     const unsigned char* ipSeedArray,
     unsigned int iSeedArraySize,
@@ -157,8 +182,9 @@ KEYGENALGO_API VKeyGenResultExOpt GenerateKeyExOpt(
     if (ipSeedArray == NULL || iopKeyArray == NULL)
         return KGREO_UnspecifiedError;
 
-    if (iSecurityLevel == 1U)
+    switch(iSecurityLevel)
     {
+    case 1U:
         // AES-128 operates on exactly one or more complete 16-byte blocks.
         if (iSeedArraySize != 16U || iMaxKeyArraySize < 16U)
             return KGREO_BufferToSmall;
@@ -168,18 +194,13 @@ KEYGENALGO_API VKeyGenResultExOpt GenerateKeyExOpt(
 
         if (encryptedLength != 16)
             return KGREO_UnspecifiedError;
-
-        oActualKeyArraySize = 16U;
-        return KGREO_Ok;
+        break;
+    
+    default:
+        GenerateKeyFromSeed(ipSeedArray, iopKeyArray);
+        break;
     }
 
-    // Preserve the example behavior for other security levels.
-    if (iSeedArraySize == 0U || iMaxKeyArraySize < iSeedArraySize)
-        return KGREO_BufferToSmall;
-
-    for (unsigned int i = 0; i < iSeedArraySize; ++i)
-        iopKeyArray[i] = 0x5AU;
-
-    oActualKeyArraySize = iSeedArraySize;
+    oActualKeyArraySize = 16U;
     return KGREO_Ok;
 }
